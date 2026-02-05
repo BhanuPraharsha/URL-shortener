@@ -8,9 +8,20 @@ const urlSchema = new mongoose.Schema({
   analytics: [{
     timestamp: { type: Date, default: Date.now },
     device: String,
-    ip: String
+    ip: String,
+    referrer: String,
+    location: {
+      country: String,
+      city: String,
+      region: String
+    },
+    browser: String,
+    os: String
   }],
   createdAt: { type: Date, default: Date.now }
 });
+
+urlSchema.index({ shortCode: 1 });
+urlSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('Url', urlSchema);
