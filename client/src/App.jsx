@@ -1,73 +1,83 @@
 import { useState } from 'react';
-import axios from 'axios';
+import { Toaster } from 'react-hot-toast';
+import URLShortener from './components/URLShortener';
+import AnalyticsDashboard from './components/AnalyticsDashboard';
+import { FiLink2 } from 'react-icons/fi';
+import './App.css';
 
 function App() {
-  const [longUrl, setLongUrl] = useState('');
-  const [shortUrl, setShortUrl] = useState('');
-  const [analytics, setAnalytics] = useState(null);
+  const [currentShortCode, setCurrentShortCode] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post('http://localhost:5000/api/shorten', { originalUrl: longUrl });
-      setShortUrl(`http://localhost:5000/${res.data.shortCode}`);
-      // Fetch analytics for immediate view
-      fetchAnalytics(res.data.shortCode);
-    } catch (err) {
-      alert('Error creating link');
-    }
-  };
-
-  const fetchAnalytics = async (code) => {
-    try {
-      const res = await axios.get(`http://localhost:5000/api/analytics/${code}`);
-      setAnalytics(res.data);
-    } catch (err) {
-      console.error(err);
-    }
+  const handleUrlShortened = (shortCode) => {
+    setCurrentShortCode(shortCode);
   };
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
-      <h1>URL Shortener & Analytics</h1>
-      
-      {/* Input Section */}
-      <form onSubmit={handleSubmit}>
-        <input 
-          type="url" 
-          placeholder="Enter long URL..." 
-          value={longUrl}
-          onChange={(e) => setLongUrl(e.target.value)}
-          required
-          style={{ padding: '10px', width: '300px' }}
-        />
-        <button type="submit" style={{ padding: '10px 20px', marginLeft: '10px' }}>Shorten</button>
-      </form>
+    <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#111827',
+            color: '#fff',
+            borderRadius: '0.5rem',
+            padding: '0.75rem 1rem',
+            fontSize: '0.875rem'
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
 
-      {/* Result Section */}
-      {shortUrl && (
-        <div style={{ marginTop: '20px', background: '#f0f0f0', padding: '10px' }}>
-          <p>Short URL: <a href={shortUrl} target="_blank" rel="noreferrer">{shortUrl}</a></p>
-        </div>
-      )}
+      <div className="app-container">
+        {/* Header */}
+        <header className="header">
+          <div className="container">
+            <div className="header-content">
+              <div className="logo">
+                <FiLink2 size={28} />
+                <h1>LinkShort</h1>
+              </div>
+              <p className="tagline">Fast, secure URL shortening with powerful analytics</p>
+            </div>
+          </div>
+        </header>
 
-      {/* Analytics Section */}
-      {analytics && (
-        <div style={{ marginTop: '30px' }}>
-          <h2>Analytics Dashboard</h2>
-          <p><strong>Total Clicks:</strong> {analytics.clicks}</p>
-          
-          <h3>Recent Access:</h3>
-          <ul>
-            {analytics.analytics.slice(-5).map((entry, idx) => (
-              <li key={idx}>
-                {new Date(entry.timestamp).toLocaleString()} - Device: {entry.device}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+        {/* Main Content */}
+        <main className="main-content">
+          <div className="container">
+            <div className="content-grid">
+              {/* URL Shortener Section */}
+              <section>
+                <URLShortener onShortened={handleUrlShortened} />
+              </section>
+
+              {/* Analytics Section */}
+              <section className="mt-2xl">
+                <AnalyticsDashboard shortCode={currentShortCode} />
+              </section>
+            </div>
+          </div>
+        </main>
+
+        {/* Footer */}
+        <footer className="footer">
+          <div className="container">
+          </div>
+        </footer>
+      </div>
+    </>
   );
 }
 
